@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMD Pforte - Übergabeprotokoll</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        h1 {
+            color: #00a000; /* Metallic-Grün */
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .calendar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 10px;
+        }
+
+        .year-select {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .month-title {
+            grid-column: span 7;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .day-of-week {
+            font-weight: bold;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f0f0f0;
+        }
+
+        .day {
+            padding: 15px;
+            border: 1px solid #ccc;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            background-color: #f9f9f9;
+        }
+
+        .day:hover {
+            background-color: #e0e0e0;
+        }
+
+        .day.active .inputs {
+            display: block;
+        }
+
+        .inputs {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .shift-group {
+            margin-bottom: 15px;
+        }
+
+        .shift-group input, .shift-group textarea, .shift-group select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #00a000;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: block;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #007000;
+        }
+
+        .entry {
+            font-size: 0.9em;
+            color: #007000;
+            margin-top: 5px;
+            text-align: left;
+            display: block;
+        }
+
+        .buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .calendar {
+                grid-template-columns: repeat(4, 1fr); /* Weniger Spalten auf kleineren Bildschirmen */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .calendar {
+                grid-template-columns: repeat(2, 1fr); /* Noch weniger Spalten auf sehr kleinen Bildschirmen */
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>GMD Pforte - Übergabeprotokoll</h1>
+    <div class="calendar-container">
+        <div class="year-select">
+            <label for="year">Jahr:</label>
+            <select id="year" onchange="generateCalendar()">
+                <!-- Jahre von 2020 bis 2050 -->
+                <script>
+                    for (let i = 2020; i <= 2050; i++) {
+                        document.write('<option value="' + i + '">' + i + '</option>');
+                    }
+                </script>
+            </select>
+        </div>
+        <div id="calendar" class="calendar"></div>
+    </div>
+
+    <script>
+        function generateCalendar() {
+            const year = document.getElementById('year').value;
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = '';
+
+            const months = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+            const daysOfWeek = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+
+            for (let month = 0; month < 12; month++) {
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                // Monatstitel
+                const monthTitle = document.createElement('div');
+                monthTitle.className = 'month-title';
+                monthTitle.innerHTML = `<h2>${months[month]}</h2>`;
+                calendar.appendChild(monthTitle);
+
+                // Wochentage
+                daysOfWeek.forEach(day => {
+                    const dayOfWeek = document.createElement('div');
+                    dayOfWeek.className = 'day-of-week';
+                    dayOfWeek.innerText = day;
+                    calendar.appendChild(dayOfWeek);
+                });
+
+                // Leerzellen für den Start des Monats
+                for (let i = 0; i < firstDay; i++) {
+                    const emptyCell = document.createElement('div');
+                    emptyCell.className = 'day';
+                    calendar.appendChild(emptyCell);
+                }
+
+                // Tage des Monats
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayCell = document.createElement('div');
+                    dayCell.className = 'day';
+                    dayCell.innerHTML = `
+                        <span>${day}</span>
+                        <div class="inputs">
+                            <div class="shift-group">
+                                <strong>Frühschicht</strong>
+                                <input type="text" placeholder="Name" id="name-${year}-${month}-${day}-shift1">
+                                <textarea placeholder="Bericht" id="report-${year}-${month}-${day}-shift1"></textarea>
+                                <input type="text" placeholder="Übergabe an" id="handoverTo-${year}-${month}-${day}-shift1">
+                                <select id="handoverConfirmed-${year}-${month}-${day}-shift1">
+                                    <option value="Ja">Ja</option>
+                                    <option value="Nein">Nein</option>
+                                </select>
+                            </div>
+                            <div class="shift-group">
+                                <strong>Spätschicht</strong>
+                                <input type="text" placeholder="Name" id="name-${year}-${month}-${day}-shift2">
+                                <textarea placeholder="Bericht" id="report-${year}-${month}-${day}-shift2"></textarea>
+                                <input type="text" placeholder="Übergabe an" id="handoverTo-${year}-${month}-${day}-shift2">
+                                <select id="handoverConfirmed-${year}-${month}-${day}-shift2">
+                                    <option value="Ja">Ja</option>
+                                    <option value="Nein">Nein</option>
+                                </select>
+                            </div>
+                            <div class="shift-group">
+                                <strong>Nachtschicht</strong>
+                                <input type="text" placeholder="Name" id="name-${year}-${month}-${day}-shift3">
+                                <textarea placeholder="Bericht" id="report-${year}-${month}-${day}-shift3"></textarea>
+                                <input type="text" placeholder="Übergabe an" id="handoverTo-${year}-${month}-${day}-shift3">
+                                <select id="handoverConfirmed-${year}-${month}-${day}-shift3">
+                                    <option value="Ja">Ja</option>
+                                    <option value="Nein">Nein</option>
+                                </select>
+                            </div>
+                            <button onclick="saveEntry(${year}, ${month}, ${day}, this)">Speichern</button>
+                        </div>
+                    `;
+
+                    const savedEntries = JSON.parse(localStorage.getItem(`entries-${year}-${month}-${day}`)) || [];
+                    savedEntries.forEach((entry, index) => {
+                        dayCell.innerHTML += `
+                            <div class="entry">
+                                <strong>Schicht ${index + 1}:</strong> <br>
+                                <strong>Name:</strong> ${entry.name} <br>
+                                <strong>Bericht:</strong> ${entry.report} <br>
+                                <strong>Übergabe an:</strong> ${entry.handoverTo} <br>
+                                <strong>Übergeben:</strong> ${entry.handoverConfirmed} <br>
+                                <button onclick="editEntry(${year}, ${month}, ${day}, ${index}, this)">Bearbeiten</button>
+                            </div>`;
+                    });
+
+                    dayCell.onclick = function (e) {
+                        if (!dayCell.classList.contains('active')) {
+                            const activeCells = document.querySelectorAll('.day.active');
+                            activeCells.forEach(cell => {
+                                if (cell !== dayCell) {
+                                    cell.classList.remove('active');
+                                    cell.querySelector('.inputs').style.display = 'none';
+                                }
+                            });
+                            dayCell.classList.add('active');
+                            dayCell.querySelector('.inputs').style.display = 'block';
+                        }
+                    };
+
+                    calendar.appendChild(dayCell);
+                }
+            }
+        }
+
+        function saveEntry(year, month, day, button) {
+            const dayCell = button.parentElement.parentElement;
+            const name1 = dayCell.querySelector(`#name-${year}-${month}-${day}-shift1`).value;
+            const report1 = dayCell.querySelector(`#report-${year}-${month}-${day}-shift1`).value;
+            const handoverTo1 = dayCell.querySelector(`#handoverTo-${year}-${month}-${day}-shift1`).value;
+            const handoverConfirmed1 = dayCell.querySelector(`#handoverConfirmed-${year}-${month}-${day}-shift1`).value;
+            
+            const name2 = dayCell.querySelector(`#name-${year}-${month}-${day}-shift2`).value;
+            const report2 = dayCell.querySelector(`#report-${year}-${month}-${day}-shift2`).value;
+            const handoverTo2 = dayCell.querySelector(`#handoverTo-${year}-${month}-${day}-shift2`).value;
+            const handoverConfirmed2 = dayCell.querySelector(`#handoverConfirmed-${year}-${month}-${day}-shift2`).value;
+            
+            const name3 = dayCell.querySelector(`#name-${year}-${month}-${day}-shift3`).value;
+            const report3 = dayCell.querySelector(`#report-${year}-${month}-${day}-shift3`).value;
+            const handoverTo3 = dayCell.querySelector(`#handoverTo-${year}-${month}-${day}-shift3`).value;
+            const handoverConfirmed3 = dayCell.querySelector(`#handoverConfirmed-${year}-${month}-${day}-shift3`).value;
+
+            const entries = [];
+            if (name1 && report1 && handoverTo1) {
+                entries.push({
+                    name: name1,
+                    report: report1,
+                    handoverTo: handoverTo1,
+                    handoverConfirmed: handoverConfirmed1
+                });
+            }
+            if (name2 && report2 && handoverTo2) {
+                entries.push({
+                    name: name2,
+                    report: report2,
+                    handoverTo: handoverTo2,
+                    handoverConfirmed: handoverConfirmed2
+                });
+            }
+            if (name3 && report3 && handoverTo3) {
+                entries.push({
+                    name: name3,
+                    report: report3,
+                    handoverTo: handoverTo3,
+                    handoverConfirmed: handoverConfirmed3
+                });
+            }
+
+            if (entries.length > 0) {
+                localStorage.setItem(`entries-${year}-${month}-${day}`, JSON.stringify(entries));
+
+                // Zeige die gespeicherten Einträge an
+                const entryDivs = dayCell.querySelectorAll('.entry');
+                entryDivs.forEach(div => div.remove());
+
+                entries.forEach((entry, index) => {
+                    const entryDiv = document.createElement('div');
+                    entryDiv.className = 'entry';
+                    entryDiv.innerHTML = `
+                        <strong>Schicht ${index + 1}:</strong> <br>
+                        <strong>Name:</strong> ${entry.name} <br>
+                        <strong>Bericht:</strong> ${entry.report} <br>
+                        <strong>Übergabe an:</strong> ${entry.handoverTo} <br>
+                        <strong>Übergeben:</strong> ${entry.handoverConfirmed} <br>
+                        <button onclick="editEntry(${year}, ${month}, ${day}, ${index}, this)">Bearbeiten</button>
+                    `;
+                    dayCell.appendChild(entryDiv);
+                });
+
+                dayCell.classList.remove('active');
+                dayCell.querySelector('.inputs').style.display = 'none';
+            } else {
+                alert('Bitte füllen Sie alle Felder aus.');
+            }
+        }
+
+        function editEntry(year, month, day, index, button) {
+            const dayCell = button.parentElement.parentElement;
+            const entryDiv = dayCell.querySelector('.entry');
+            dayCell.querySelector('.inputs').style.display = 'block';
+            dayCell.classList.add('active');
+
+            const savedEntries = JSON.parse(localStorage.getItem(`entries-${year}-${month}-${day}`)) || [];
+            if (savedEntries[index]) {
+                dayCell.querySelector(`#name-${year}-${month}-${day}-shift1`).value = savedEntries[index].name;
+                dayCell.querySelector(`#report-${year}-${month}-${day}-shift1`).value = savedEntries[index].report;
+                dayCell.querySelector(`#handoverTo-${year}-${month}-${day}-shift1`).value = savedEntries[index].handoverTo;
+                dayCell.querySelector(`#handoverConfirmed-${year}-${month}-${day}-shift1`).value = savedEntries[index].handoverConfirmed;
+            }
+            entryDiv.innerHTML = ''; // Entferne den bestehenden Eintrag, um Bearbeitungsmodus anzuzeigen
+        }
+
+        // Generiere den Kalender für das aktuelle Jahr beim Laden der Seite
+        window.onload = function () {
+            const currentYear = new Date().getFullYear();
+            document.getElementById('year').value = currentYear;
+            generateCalendar();
+        };
+    </script>
+</body>
+</html>
+
+
+
+
+        

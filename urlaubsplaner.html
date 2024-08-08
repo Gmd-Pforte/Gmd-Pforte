@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMD Pforte - Urlaubsplaner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        h1 {
+            color: #00a000; /* Metallic-Grün */
+            text-align: center;
+        }
+
+        .calendar-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .year-select {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .day {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            background-color: #f9f9f9;
+        }
+
+        .day:hover {
+            background-color: #e0e0e0;
+        }
+
+        .day input {
+            display: none;
+            width: 90%;
+            padding: 5px;
+            margin-top: 5px;
+        }
+
+        .day.active input {
+            display: block;
+        }
+
+        .day span {
+            font-weight: bold;
+        }
+
+        .buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #00a000;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #007000;
+        }
+    </style>
+</head>
+<body>
+    <h1>GMD Pforte - Urlaubsplaner</h1>
+    <div class="calendar-container">
+        <div class="year-select">
+            <label for="year">Jahr:</label>
+            <select id="year" onchange="generateCalendar()">
+                <!-- Jahre von 2020 bis 2050 -->
+                <script>
+                    for (let i = 2020; i <= 2050; i++) {
+                        document.write('<option value="' + i + '">' + i + '</option>');
+                    }
+                </script>
+            </select>
+        </div>
+        <div id="calendar" class="calendar"></div>
+    </div>
+
+    <script>
+        function generateCalendar() {
+            const year = document.getElementById('year').value;
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = '';
+
+            const months = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+            const daysOfWeek = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+
+            for (let month = 0; month < 12; month++) {
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                // Monatstitel
+                const monthTitle = document.createElement('div');
+                monthTitle.className = 'month-title';
+                monthTitle.innerHTML = `<h2>${months[month]}</h2>`;
+                monthTitle.style.gridColumn = "span 7";
+                calendar.appendChild(monthTitle);
+
+                // Wochentage
+                daysOfWeek.forEach(day => {
+                    const dayOfWeek = document.createElement('div');
+                    dayOfWeek.className = 'day-of-week';
+                    dayOfWeek.innerText = day;
+                    calendar.appendChild(dayOfWeek);
+                });
+
+                // Leerzellen für den Start des Monats
+                for (let i = 0; i < firstDay; i++) {
+                    const emptyCell = document.createElement('div');
+                    emptyCell.className = 'day';
+                    calendar.appendChild(emptyCell);
+                }
+
+                // Tage des Monats
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayCell = document.createElement('div');
+                    dayCell.className = 'day';
+                    dayCell.innerHTML = `<span>${day}</span><input type="text" placeholder="Urlaub eintragen..." id="entry-${year}-${month}-${day}">`;
+
+                    dayCell.onclick = function () {
+                        dayCell.classList.toggle('active');
+                    };
+
+                    const savedEntry = localStorage.getItem(`entry-${year}-${month}-${day}`);
+                    if (savedEntry) {
+                        dayCell.querySelector('input').value = savedEntry;
+                    }
+
+                    dayCell.querySelector('input').onblur = function () {
+                        const entryText = dayCell.querySelector('input').value;
+                        localStorage.setItem(`entry-${year}-${month}-${day}`, entryText);
+                    };
+
+                    calendar.appendChild(dayCell);
+                }
+            }
+        }
+
+        // Generiere den Kalender für das aktuelle Jahr beim Laden der Seite
+        window.onload = function () {
+            const currentYear = new Date().getFullYear();
+            document.getElementById('year').value = currentYear;
+            generateCalendar();
+        };
+    </script>
+</body>
+</html>

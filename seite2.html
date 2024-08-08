@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMD Pforte - Protokollübersicht</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #fff;
+            color: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-family: 'Times New Roman', serif;
+            color: #32CD32; /* Metallic-Grün */
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #32CD32;
+            color: #fff;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #32CD32;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #228B22;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GMD Pforte - Protokollübersicht</h1>
+        <table id="entriesTable">
+            <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Name</th>
+                    <th>Bericht</th>
+                    <th>Übergabe an</th>
+                    <th>Übergeben</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Entries will be populated here -->
+            </tbody>
+        </table>
+        <div class="buttons">
+            <button onclick="downloadAsText()">Download</button>
+            <a href="index.html">Zurück zum Formular</a>
+        </div>
+    </div>
+
+    <script>
+        function loadEntries() {
+            let entries = localStorage.getItem('entries');
+            if (entries) {
+                entries = JSON.parse(entries);
+                const tableBody = document.getElementById('entriesTable').querySelector('tbody');
+                tableBody.innerHTML = '';
+                entries.forEach(entry => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${entry.date}</td>
+                        <td>${entry.name}</td>
+                        <td>${entry.report}</td>
+                        <td>${entry.handoverTo}</td>
+                        <td>${entry.transferred}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        }
+
+        function downloadAsText() {
+            let entries = localStorage.getItem('entries');
+            if (entries) {
+                entries = JSON.parse(entries);
+                let text = '';
+                entries.forEach(entry => {
+                    text += `Datum: ${entry.date}\nName: ${entry.name}\nBericht: ${entry.report}\nÜbergabe an: ${entry.handoverTo}\nÜbergeben: ${entry.transferred}\n\n`;
+                });
+                const blob = new Blob([text], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Übergabeprotokoll.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+            } else {
+                alert('Keine Einträge vorhanden.');
+            }
+        }
+
+        window.onload = loadEntries;
+    </script>
+</body>
+</html>
